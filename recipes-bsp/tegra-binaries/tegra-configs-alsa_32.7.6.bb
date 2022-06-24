@@ -9,13 +9,14 @@ require tegra-debian-libraries-common.inc
 MAINSUM = "c5d32bc0c84ad79f9266a622aa8c09ec6a230de19a3e35edeb01116cf9506570"
 MAINSUM:tegra210 = "256b73c87f325ea94600a94f37a7e8fa1c69b8f7b299a616b3876a61738a3472"
 
-do_install() {
-    if [ -n "${TEGRA_AUDIO_DEVICE}" ]; then
-        install -d ${D}${sysconfdir}
-        install -m 0644 ${S}/etc/asound.conf.${TEGRA_AUDIO_DEVICE} ${D}${sysconfdir}/asound.conf
-    fi
+TEGRA_AUDIO_CONFIG ?= "${S}/etc/asound.conf.${TEGRA_AUDIO_DEVICE}"
 
-    install -d ${D}${datadir}/alsa/cards
+do_install() {
+    install -d ${D}${sysconfdir} ${D}${datadir}/alsa/cards
+
+    if [ -n "${TEGRA_AUDIO_CONFIG}" ]; then
+        install -m 0644 ${TEGRA_AUDIO_CONFIG} ${D}${sysconfdir}/asound.conf
+    fi
 }
 
 do_install:append:tegra186() {
