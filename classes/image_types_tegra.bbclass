@@ -617,6 +617,14 @@ EOF
     for spec__ in ${@' '.join(['"%s"' % entry for entry in d.getVar('TEGRA_BUPGEN_SPECS').split()])}; do
         eval $spec__
         cat <<EOF >> $outfile
+for f in $STAGING_DATADIR/tegraflash/tegra19[4x]-*.cfg; do
+    cp $f .
+done
+for f in $STAGING_DATADIR/tegraflash/tegra194-*-bpmp-*.dtb; do
+    cp $f .
+done
+rm *.encrypt.signed
+rm test.dts
 MACHINE=${MACHINE} FAB="$fab" BOARDSKU="$boardsku" BOARDREV="$boardrev" ./${SOC_FAMILY}-flash-helper.sh --bup ./flash-stripped.xml.in ${DTBFILE} $sdramcfg ${ODMDATA} "\$@"
 EOF
     done

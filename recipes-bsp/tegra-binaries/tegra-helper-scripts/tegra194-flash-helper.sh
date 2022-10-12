@@ -234,9 +234,11 @@ ramcodeargs=
 if [ "$boardid" = "2888" -a "$board_sku" = "0004" ]; then
     # 32GB AGX Xavier
     ramcodeargs="--ramcode 2"
+    RAMCODE=2
 elif [ "$boardid" = "3668" -a "$board_version" = "301" ]; then
     # Xavier NX A03
     ramcodeargs="--ramcode 1"
+    RAMCODE=1
 fi
 
 for var in $FLASHVARS; do
