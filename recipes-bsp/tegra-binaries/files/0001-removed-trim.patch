@@ -1,0 +1,43 @@
+From b5902ea9e8f662cd95ed8defed7ec7c95726f9e8 Mon Sep 17 00:00:00 2001
+From: Max <git@0m.ax>
+Date: Thu, 20 Oct 2022 13:03:44 +0000
+Subject: [PATCH] removed trim
+
+---
+ bootloader/tegraflash_internal.py | 23 -----------------------
+ 1 file changed, 23 deletions(-)
+
+diff --git a/bootloader/tegraflash_internal.py b/bootloader/tegraflash_internal.py
+index 0507823..a2115a4 100755
+--- a/bootloader/tegraflash_internal.py
++++ b/bootloader/tegraflash_internal.py
+@@ -3785,29 +3785,6 @@ def tegraflash_get_ramcode():
+ 
+ def tegraflash_trim_bpmp_fw_dtb(bpmd_file=None):
+     global ramcode
+-    tegraflash_get_ramcode()
+-    if bool(values['--trim_bpmp_dtb']) == False:
+-        info_print("Disable BPMP dtb trim, using default dtb")
+-        info_print("")
+-    else:
+-        if bpmd_file is not None:
+-            tegraflash_bpmp_generate_dtb(ramcode, bpmd_file)
+-        elif "bpmp_fw_dtb" in values['--bins']:
+-            bpmp_bin_key = "bpmp_fw_dtb"
+-            bins = values['--bins'].split(';')
+-            for binary in bins:
+-                binary = binary.strip(' ')
+-                binary = binary.replace('  ', ' ')
+-                tags = binary.split(' ')
+-                if tags[0] == bpmp_bin_key:
+-                    bpmp_dtb = tags[1]
+-                    break
+-            if bpmp_dtb is None:
+-                raise tegraflash_exception('BPMP-FW DTB not found in --bins')
+-            tegraflash_bpmp_generate_dtb(ramcode, bpmp_dtb)
+-        else:
+-            info_print("BPMP dtb file is not specified, skip trimming")
+-            info_print("")
+ 
+ def tegraflash_generate_mem_bct(is_cold_boot_mb1_bct):
+     global ramcode
