@@ -835,10 +835,10 @@ IMAGE_TYPEDEP:tegrabootpart = "${IMAGE_TEGRAFLASH_FS_TYPE}"
 
 create_bootpart_image() {
     local fstype="${IMAGE_TEGRAFLASH_FS_TYPE}"
-    dd if=/dev/zero of=${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.bootpart.$fstype seek=${TEGRA_BOOTPART_SIZE} count=0 bs=1024
-    mkfs.$fstype -F -d ${IMAGE_ROOTFS}/boot ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.bootpart.$fstype
-    fsck.$fstype -pvfD ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.bootpart.$fstype || [ $? -le 3 ]
-    ln -sf ${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.bootpart.$fstype ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.bootpart.$fstype
+    dd if=/dev/zero of=${IMGDEPLOYDIR}/${IMAGE_NAME}.bootpart.$fstype seek=${TEGRA_BOOTPART_SIZE} count=0 bs=1024
+    mkfs.$fstype -F -d ${IMAGE_ROOTFS}/boot ${IMGDEPLOYDIR}/${IMAGE_NAME}.bootpart.$fstype
+    fsck.$fstype -pvfD ${IMGDEPLOYDIR}/${IMAGE_NAME}.bootpart.$fstype || [ $? -le 3 ]
+    ln -sf ${IMAGE_NAME}.bootpart.$fstype ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.bootpart.$fstype
 }
 
 oe_make_bup_payload() {
@@ -944,7 +944,7 @@ oe_make_bup_payload() {
 
 create_bup_payload_image() {
     local type="$1"
-    oe_make_bup_payload ${IMGDEPLOYDIR}/${IMAGE_NAME}${IMAGE_NAME_SUFFIX}.${type}
+    oe_make_bup_payload ${IMGDEPLOYDIR}/${IMAGE_NAME}.${type}
     install -m 0644 ${WORKDIR}/bup-payload/bl_update_payload ${IMGDEPLOYDIR}/${IMAGE_NAME}.bup-payload
     ln -sf ${IMAGE_NAME}.bup-payload ${IMGDEPLOYDIR}/${IMAGE_LINK_NAME}.bup-payload
     for f in ${WORKDIR}/bup-payload/*_only_payload; do
