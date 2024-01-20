@@ -5,26 +5,39 @@ PROVIDES = "libv4l v4l-utils"
 COMPATIBLE_MACHINE = "(tegra)"
 
 DEPENDS = "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'virtual/libx11', '', d)}"
+LDFLAGS:append = " -pthread"
+# v4l2 explicitly sets _FILE_OFFSET_BITS=32 to get access to
+# both 32 and 64 bit file APIs.  But it does not handle the time side?
+# Needs further investigation
+GLIBC_64BIT_TIME_FLAGS = ""
 
-SRC_URI = "http://linuxtv.org/downloads/v4l-utils/v4l-utils-${PV}.tar.bz2 \
-           file://0001-Make-plugin-directory-relative-to-ORIGIN.patch \
-           file://0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
-           file://0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch \
+SRC_URI ="git://git.linuxtv.org/v4l-utils.git;protocol=https;branch=stable-1.26 \
+          file://0001-Make-plugin-directory-relative-to-ORIGIN.patch \
+          file://0002-Replace-stat-fstat-calls-with-__xstat-__fxstat.patch \
+          file://0003-Update-conversion-defaults-to-match-NVIDIA-sources.patch \
 "
-SRC_URI[md5sum] = "18996bd5e9d83d47055c05de376708cd"
-SRC_URI[sha256sum] = "6cb60d822eeed20486a03cc23e0fc65956fbc1e85e0c1a7477f68bbd9802880d"
+SRCREV = "4aee01a027923cab1e40969f56f8ba58d3e6c0d1"
 
-S = "${WORKDIR}/v4l-utils-${PV}"
+PV .= "+git${SRCPV}"
 
-inherit autotools gettext pkgconfig container-runtime-csv features_check
+S = "${WORKDIR}/git"
+
+inherit meson gettext pkgconfig container-runtime-csv features_check
 
 REQUIRED_DISTRO_FEATURES = "opengl"
 
-EXTRA_OECONF = "--disable-libdvbv5 --disable-v4l-utils --disable-qv4l2 \
-                --enable-shared --disable-qvidcap --disable-gconv --disable-bpf \
-		--with-udevdir=${nonarch_base_libdir}/udev"
+EXTRA_OEMESON = "-Dlibdvbv5=disabled -Dv4l-utils=false -Dqv4l2=disabled -Dqvidcap=disabled -Dgconv=disabled -Djpeg=disabled \
+                 -Dudevdir=${base_libdir}/udev -Dv4l2-compliance-32=false -Dv4l2-ctl-32=false"
+CFLAGS:append:libc-glibc = " -DHAVE_RTLD_DI_ORIGIN"
 
-do_install:append:tegra() {
+# XXX - Top-level meson.build file uses a variable that
+# doesn't get defined if v4l-utils false
+do_patch[postfuncs] += "workaround_missing_variable"
+workaround_missing_variable() {
+    sed -i -e'/ir_bpf_enabled/d' ${S}/meson.build
+}
+
+do_install:append() {
     rm -rf ${D}${libdir}/libv4l/plugins
 }
 
