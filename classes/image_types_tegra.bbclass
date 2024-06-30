@@ -536,7 +536,10 @@ create_tegraflash_pkg:tegra186() {
     oldwd=`pwd`
     cd "${WORKDIR}/tegraflash"
     cp "${STAGING_DATADIR}/tegraflash/bsp_version" .
-    cp "${STAGING_DATADIR}/tegraflash/${MACHINE}.cfg" .
+    cp "${STAGING_DATADIR}/tegraflash/${EMMC_BCT}" .
+    if [ "${TEGRA_BOARDID}" = "3636" ]; then
+        cp ${STAGING_DATADIR}/tegraflash/tegra186-mb1-bct-memcfg-p3636-*.cfg .
+    fi
     cp "${IMAGE_TEGRAFLASH_KERNEL}" ./${LNXFILE}
     if [ -n "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ]; then
         cp "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ./initrd-flash.img
@@ -569,7 +572,7 @@ create_tegraflash_pkg:tegra186() {
             echo "ERR: missing variable: $var" >&2
             exit 1
         fi
-        fnglob=`echo $pat | sed -e"s,@BPFDTBREV@,\*," -e"s,@BOARDREV@,\*," -e"s,@PMICREV@,\*," -e"s,@CHIPREV@,\*,"`
+        fnglob=`echo $pat | sed -e"s,@BPFDTBREV@,\*," -e"s,@BPFDTBSKU@,\*," -e"s,@BOARDREV@,\*," -e"s,@PMICREV@,\*," -e"s,@CHIPREV@,\*,"`
         for fname in ${STAGING_DATADIR}/tegraflash/$fnglob; do
             if [ ! -e $fname ]; then
                bbfatal "$var file(s) not found"
@@ -602,7 +605,7 @@ create_tegraflash_pkg:tegra186() {
     rm -f doflash.sh
     cat > doflash.sh <<END
 #!/bin/sh
-MACHINE=${MACHINE} ./tegra186-flash-helper.sh -B ${TEGRA_BLBLOCKSIZE} $DATAARGS flash.xml.in ${DTBFILE} ${MACHINE}.cfg ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
+MACHINE=${MACHINE} ./tegra186-flash-helper.sh -B ${TEGRA_BLBLOCKSIZE} $DATAARGS flash.xml.in ${DTBFILE} ${EMMC_BCT} ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
 END
     chmod +x doflash.sh
     if [ -n "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ]; then
@@ -614,10 +617,12 @@ ROOTFS_DEVICE="${ROOTFS_DEVICE_FOR_INITRD_FLASH}"
 MACHINE="${MACHINE}"
 CHIPID="${NVIDIA_CHIP}"
 DEFAULTS[BOARDID]="${TEGRA_BOARDID}"
+DEFAULTS[BOARDSKU]="${TEGRA_BOARDSKU}"
 DEFAULTS[FAB]="${TEGRA_FAB}"
 DEFAULTS[fuselevel]="fuselevel_production"
 DTBFILE="${DTBFILE}"
-EMMC_BCTS="${MACHINE}.cfg"
+INITRD_FLASHER_DTBFILE="${INITRD_FLASHER_DTBFILE}"
+EMMC_BCTS="${EMMC_BCT}"
 ODMDATA="${ODMDATA}"
 LNXFILE="${LNXFILE}"
 ROOTFS_IMAGE="${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE}"
@@ -630,7 +635,7 @@ END
     if [ -e ./odmfuse_pkc.xml ]; then
         cat > burnfuses.sh <<END
 #!/bin/sh
-MACHINE=${MACHINE} ./tegra186-flash-helper.sh -c "burnfuses odmfuse_pkc.xml" --no-flash $DATAARGS flash.xml.in ${DTBFILE} ${MACHINE}.cfg ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
+MACHINE=${MACHINE} ./tegra186-flash-helper.sh -c "burnfuses odmfuse_pkc.xml" --no-flash $DATAARGS flash.xml.in ${DTBFILE} ${EMMC_BCT} ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
 END
         chmod +x burnfuses.sh
     fi
@@ -648,8 +653,8 @@ create_tegraflash_pkg:tegra194() {
     oldwd=`pwd`
     cd "${WORKDIR}/tegraflash"
     cp "${STAGING_DATADIR}/tegraflash/bsp_version" .
-    cp "${STAGING_DATADIR}/tegraflash/${MACHINE}.cfg" .
-    cp "${STAGING_DATADIR}/tegraflash/${MACHINE}-override.cfg" .
+    cp "${STAGING_DATADIR}/tegraflash/${EMMC_BCT}" .
+    cp "${STAGING_DATADIR}/tegraflash/${EMMC_BCT_OVERRIDE}" .
     cp "${IMAGE_TEGRAFLASH_KERNEL}" ./${LNXFILE}
     if [ -n "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ]; then
         cp "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ./initrd-flash.img
@@ -706,7 +711,7 @@ create_tegraflash_pkg:tegra194() {
     rm -f doflash.sh
     cat > doflash.sh <<END
 #!/bin/sh
-MACHINE=${MACHINE} ./tegra194-flash-helper.sh $DATAARGS flash.xml.in ${DTBFILE} ${MACHINE}.cfg,${MACHINE}-override.cfg ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
+MACHINE=${MACHINE} ./tegra194-flash-helper.sh $DATAARGS flash.xml.in ${DTBFILE} ${EMMC_BCT},${EMMC_BCT_OVERRIDE} ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
 END
     chmod +x doflash.sh
     if [ -n "${IMAGE_TEGRAFLASH_INITRD_FLASHER}" ]; then
@@ -736,7 +741,7 @@ END
     if [ -e ./odmfuse_pkc.xml ]; then
         cat > burnfuses.sh <<END
 #!/bin/sh
-MACHINE=${MACHINE} ./tegra194-flash-helper.sh -c "burnfuses odmfuse_pkc.xml" --no-flash $DATAARGS flash.xml.in ${DTBFILE} ${MACHINE}.cfg,${MACHINE}-override.cfg ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
+MACHINE=${MACHINE} ./tegra194-flash-helper.sh -c "burnfuses odmfuse_pkc.xml" --no-flash $DATAARGS flash.xml.in ${DTBFILE} ${EMMC_BCT},${EMMC_BCT_OVERRIDE} ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
 END
         chmod +x burnfuses.sh
     fi
@@ -744,7 +749,7 @@ END
         rm -f dosdcard.sh
         cat > dosdcard.sh <<END
 #!/bin/sh
-MACHINE=${MACHINE} BOARDID=\${BOARDID:-${TEGRA_BOARDID}} FAB=\${FAB:-${TEGRA_FAB}} CHIPREV=\${CHIPREV:-${TEGRA_CHIPREV}} BOARDSKU=\${BOARDSKU:-${TEGRA_BOARDSKU}} ./tegra194-flash-helper.sh --sdcard -B ${TEGRA_BLBLOCKSIZE} -s ${TEGRAFLASH_SDCARD_SIZE} -b ${IMAGE_BASENAME} $DATAARGS flash.xml.in ${DTBFILE} ${MACHINE}.cfg,${MACHINE}-override.cfg ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
+MACHINE=${MACHINE} BOARDID=\${BOARDID:-${TEGRA_BOARDID}} FAB=\${FAB:-${TEGRA_FAB}} CHIPREV=\${CHIPREV:-${TEGRA_CHIPREV}} BOARDSKU=\${BOARDSKU:-${TEGRA_BOARDSKU}} ./tegra194-flash-helper.sh --sdcard -B ${TEGRA_BLBLOCKSIZE} -s ${TEGRAFLASH_SDCARD_SIZE} -b ${IMAGE_BASENAME} $DATAARGS flash.xml.in ${DTBFILE} ${EMMC_BCT},${EMMC_BCT_OVERRIDE} ${ODMDATA} ${LNXFILE} ${IMAGE_BASENAME}.${IMAGE_TEGRAFLASH_FS_TYPE} "\$@"
 END
         chmod +x dosdcard.sh
     elif [ "${TEGRA_ROOTFS_AND_KERNEL_ON_SDCARD}" = "1" ]; then
@@ -791,7 +796,9 @@ export localbootfile=${LNXFILE}
 export CHIPREV=${TEGRA_CHIPREV}
 EOF
     if [ "${SOC_FAMILY}" = "tegra194" ]; then
-        sdramcfg="${MACHINE}.cfg,${MACHINE}-override.cfg"
+        sdramcfg="${EMMC_BCT},${EMMC_BCT_OVERRIDE}"
+    elif [ "${SOC_FAMILY}" = "tegra186" ]; then
+        sdramcfg="${EMMC_BCT}.cfg"
     else
         sdramcfg="${MACHINE}.cfg"
     fi
@@ -856,9 +863,16 @@ oe_make_bup_payload() {
     fi
     tegraflash_create_flash_config "${WORKDIR}/bup-payload" boot.img "$layoutsrc"
     cp "${STAGING_DATADIR}/tegraflash/bsp_version" .
-    cp "${STAGING_DATADIR}/tegraflash/${MACHINE}.cfg" .
-    if [ "${SOC_FAMILY}" = "tegra194" ]; then
-        cp "${STAGING_DATADIR}/tegraflash/${MACHINE}-override.cfg" .
+    if [ "${SOC_FAMILY}" = "tegra210" ]; then
+        cp "${STAGING_DATADIR}/tegraflash/${MACHINE}.cfg" .
+    else
+        cp "${STAGING_DATADIR}/tegraflash/${EMMC_BCT}" .
+        if [ "${TEGRA_BOARDID}" = "3636" ]; then
+            cp ${STAGING_DATADIR}/tegraflash/tegra186-mb1-bct-memcfg-p3636-*.cfg .
+        fi
+        if [ "${SOC_FAMILY}" = "tegra194" ]; then
+            cp "${STAGING_DATADIR}/tegraflash/${EMMC_BCT_OVERRIDE}" .
+        fi
     fi
     copy_dtbs "${WORKDIR}/bup-payload"
     cp "${DEPLOY_DIR_IMAGE}/cboot-${MACHINE}.bin" ./$cbootfilename
