@@ -12,9 +12,10 @@ S = "${WORKDIR}"
 
 COMPILER_CMD  = "${@d.getVar('CXX_FOR_CUDA').split()[0]}"
 CMAKE_CUDA_ARCHITECTURES = "${@d.getVar('CUDA_ARCHITECTURES') if d.getVar('CUDA_ARCHITECTURES') else 'OFF'}"
+CUDA_EXTRA_CXXFLAGS ??= "-isystem=${includedir}/cuda-compat-workarounds"
 
 def arch_flags(d):
-    archflags = [flag for flag in (d.getVar('TARGET_CC_ARCH') or '').split() if not flag.startswith('-mbranch-protection')]
+    archflags = [flag for flag in ((d.getVar('TARGET_CC_ARCH') or '').split() + (d.getVar('CUDA_EXTRA_CXXFLAGS') or '').split()) if not flag.startswith('-mbranch-protection')]
     if archflags:
         return "-Xcompiler " + ','.join(archflags)
     return ""
