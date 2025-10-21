@@ -1,4 +1,4 @@
-require gcc-${PV}.inc
+require gcc-for-nvcc-${PV}.inc
 require gcc-for-nvcc-runtime.inc
 
 # Disable ifuncs for libatomic on arm conflicts -march/-mcpu

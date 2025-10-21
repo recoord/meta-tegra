@@ -7,5 +7,5 @@ deltask do_patch
 
 SRC_URI = ""
 
-do_configure[depends] += "gcc-source-${PV}:do_preconfigure"
-do_populate_lic[depends] += "gcc-source-${PV}:do_unpack"
+do_configure[depends] += "gcc-source-for-nvcc-${PV}:do_preconfigure"
+do_populate_lic[depends] += "gcc-source-for-nvcc-${PV}:do_unpack"

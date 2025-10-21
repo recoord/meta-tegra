@@ -1,4 +1,4 @@
-require gcc-${PV}.inc
+require gcc-for-nvcc-${PV}.inc
 require libgcc-for-nvcc-initial.inc
 
 # Building with thumb enabled on armv6t fails

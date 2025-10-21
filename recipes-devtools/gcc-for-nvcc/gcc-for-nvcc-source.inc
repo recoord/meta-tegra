@@ -7,7 +7,7 @@ RM_WORK_EXCLUDE += "${PN}"
 
 inherit nopackages
 
-PN = "gcc-source-${PV}"
+PN = "gcc-source-for-nvcc-${PV}"
 WORKDIR = "${TMPDIR}/work-shared/gcc-${PV}-${PR}"
 SSTATE_SWSPEC = "sstate:gcc::${PV}:${PR}::${SSTATE_VERSION}:"
 

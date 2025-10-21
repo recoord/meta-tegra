@@ -1,4 +1,4 @@
-require gcc-${PV}.inc
+require gcc-for-nvcc-${PV}.inc
 require gcc-for-nvcc-target.inc
 
 # Building with thumb enabled on armv4t armv5t fails with
