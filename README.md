@@ -22,8 +22,8 @@ Also supported thanks to community support:
 
 This layer depends on:
 URI: git://git.openembedded.org/openembedded-core
-branch: kirkstone
-LAYERSERIES_COMPAT: kirkstone
+branch: scarthgap
+LAYERSERIES_COMPAT: scarthgap
 
 Final JetPack 4 Release
 -----------------------
