@@ -28,6 +28,7 @@ S = "${WORKDIR}/gstomx1_src/gst-omx1"
 
 CFLAGS += "-DHAVE_NVBUF_UTILS"
 LDFLAGS += "-lnvbuf_utils"
+EXTRA_AUTORECONF += "--exclude=gtkdocize"
 
 inherit autotools pkgconfig gettext container-runtime-csv features_check
 
