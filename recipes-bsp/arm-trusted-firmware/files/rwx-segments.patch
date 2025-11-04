@@ -1,0 +1,38 @@
+From 051c723a6463a579b05dcaa81f204516737a3645 Mon Sep 17 00:00:00 2001
+From: Ross Burton <ross.burton@arm.com>
+Date: Wed, 9 Aug 2023 15:56:03 -0400
+Subject: [PATCH] Binutils 2.39 now warns when a segment has RXW permissions[1]
+
+aarch64-none-elf-ld.bfd: warning: bl31.elf has a LOAD segment with RWX permissions
+
+However, TF-A passes --fatal-warnings to LD, so this is a build failure.
+
+There is a ticket filed upstream[2], so until that is resolved we can
+disable this warning.
+
+[1] https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=ba951afb99912da01a6e8434126b8fac7aa75107
+[2] https://developer.trustedfirmware.org/T996
+
+Upstream-Status: Backport https://git.yoctoproject.org/meta-arm/commit/meta-arm?id=977c5222d8c2f6f6c7e522e480a6e4cd40ba32d7
+Signed-off-by: Ross Burton <ross.burton@arm.com>
+Signed-off-by: Jon Mason <jon.mason@arm.com>
+---
+ Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Makefile b/Makefile
+index 8977452..72d5e67 100644
+--- a/Makefile
++++ b/Makefile
+@@ -172,7 +172,7 @@ TF_CFLAGS		+=	$(CPPFLAGS) $(TF_CFLAGS_$(ARCH))		\
+ 				-ffreestanding -fno-builtin -Wall -std=gnu99	\
+ 				-Os -ffunction-sections -fdata-sections
+ 
+-LDFLAGS			+=	--fatal-warnings -O1
++LDFLAGS			+=	-O1
+ LDFLAGS			+=	--gc-sections
+ 
+ 
+-- 
+2.34.1
+

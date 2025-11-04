@@ -15,6 +15,10 @@ COMPATIBLE_MACHINE = "(tegra186|tegra194)"
 PACKAGECONFIG ??= "trusty"
 PACKAGECONFIG[trusty] = "SPD=trusty"
 
+SRC_URI += " \
+	file://rwx-segments.patch \
+"
+
 B = "${WORKDIR}/build"
 
 CFLAGS[unexport] = "1"
