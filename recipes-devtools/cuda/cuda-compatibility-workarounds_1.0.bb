@@ -2,7 +2,10 @@ DESCRIPTION = "Workarounds for CUDA compiler compatibility with newer toolchains
 LICENSE = "MIT"
 LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda2f7b4f302"
 
-SRC_URI = "file://math-vector.h"
+SRC_URI = " \
+    file://math-vector.h \
+    file://types.h \
+"
 
 COMPATIBLE_MACHINE:class-target = "(cuda)"
 COMPATIBLE_HOST = "(x86_64|aarch64)"
@@ -21,6 +24,7 @@ do_install() {
 
 do_install:aarch64() {
     install -D -m 0644 -t ${D}${includedir}/cuda-compat-workarounds/bits ${WORKDIR}/math-vector.h
+    install -D -m 0644 -t ${D}${includedir}/cuda-compat-workarounds/linux ${WORKDIR}/types.h
 }
 
 ALLOW_EMPTY:${PN} = "1"
