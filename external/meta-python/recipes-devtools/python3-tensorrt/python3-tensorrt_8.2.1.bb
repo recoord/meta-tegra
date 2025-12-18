@@ -13,6 +13,7 @@ SRC_REPO = "github.com/NVIDIA/TensorRT.git;protocol=https"
 SRCBRANCH = "release/8.2"
 SRC_URI = "git://${SRC_REPO};branch=${SRCBRANCH} \
            file://0001-Fixups-for-cross-building-in-OE.patch \
+           file://0002-Fix-numpy-bool-deprecation.patch \
            "
 # 8.2.1 tag
 SRCREV = "6f38570b74066ef464744bc789f8512191f1cbc0"

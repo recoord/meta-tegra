@@ -1,0 +1,130 @@
+From c6b480f617fedf55b7fa14bee16422d61c2f554c Mon Sep 17 00:00:00 2001
+From: Alexander Jacobsen <dev@alexbmj.com>
+Date: Thu, 18 Dec 2025 10:38:24 +0000
+Subject: [PATCH] Fix numpy bool deprecation
+
+---
+ python/packaging/tensorrt/__init__.py                   | 2 +-
+ samples/python/uff_ssd/utils/mAP.py                     | 2 +-
+ tools/Polygraphy/polygraphy/backend/onnxrt/runner.py    | 2 +-
+ tools/Polygraphy/tests/backend/pluginref/test_runner.py | 2 +-
+ tools/Polygraphy/tests/comparator/test_compare.py       | 4 ++--
+ tools/Polygraphy/tests/comparator/test_data_loader.py   | 6 +++---
+ tools/onnx-graphsurgeon/tests/ir/test_graph.py          | 2 +-
+ 7 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/python/packaging/tensorrt/__init__.py b/python/packaging/tensorrt/__init__.py
+index 232e1f2a..0556e179 100644
+--- a/python/packaging/tensorrt/__init__.py
++++ b/python/packaging/tensorrt/__init__.py
+@@ -162,7 +162,7 @@ def nptype(trt_type):
+         float16: np.float16,
+         int8: np.int8,
+         int32: np.int32,
+-        bool: np.bool,
++        bool: np.bool_,
+     }
+     if trt_type in mapping:
+         return mapping[trt_type]
+diff --git a/samples/python/uff_ssd/utils/mAP.py b/samples/python/uff_ssd/utils/mAP.py
+index 468ddc46..9f4feb51 100644
+--- a/samples/python/uff_ssd/utils/mAP.py
++++ b/samples/python/uff_ssd/utils/mAP.py
+@@ -148,7 +148,7 @@ def extract_class_detetions(voc_detections, classname, image_numbers):
+             bbox[3] *= (300.0 / height)
+             image_bboxes[idx] = bbox
+         image_bboxes = np.array(image_bboxes)
+-        difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
++        difficult = np.array([x['difficult'] for x in R]).astype(bool)
+         det = [False] * len(R)
+         class_detections[image_num] = {
+             'bbox': image_bboxes,
+diff --git a/tools/Polygraphy/polygraphy/backend/onnxrt/runner.py b/tools/Polygraphy/polygraphy/backend/onnxrt/runner.py
+index 796a302f..03470f86 100644
+--- a/tools/Polygraphy/polygraphy/backend/onnxrt/runner.py
++++ b/tools/Polygraphy/polygraphy/backend/onnxrt/runner.py
+@@ -54,7 +54,7 @@ class OnnxrtRunner(BaseRunner):
+             "tensor(uint32)": np.uint32,
+             "tensor(uint64)": np.uint64,
+             "tensor(uint8)": np.uint8,
+-            "tensor(bool)": np.bool,
++            "tensor(bool)": bool,
+             "tensor(string)": np.unicode,
+         }
+ 
+diff --git a/tools/Polygraphy/tests/backend/pluginref/test_runner.py b/tools/Polygraphy/tests/backend/pluginref/test_runner.py
+index 2e69bcdf..d19099a4 100644
+--- a/tools/Polygraphy/tests/backend/pluginref/test_runner.py
++++ b/tools/Polygraphy/tests/backend/pluginref/test_runner.py
+@@ -51,7 +51,7 @@ class TestPluginRefRunner(object):
+         model = ONNX_MODELS["and"]
+         with PluginRefRunner(GsFromOnnx(OnnxFromPath(model.path))) as runner:
+             with pytest.raises(PolygraphyException, match="does not have a reference implementation registered!"):
+-                runner.infer({"x": np.ones(shape=(3, 4), dtype=np.bool), "y": np.ones(shape=(3, 4), dtype=np.bool)})
++                runner.infer({"x": np.ones(shape=(3, 4), dtype=bool), "y": np.ones(shape=(3, 4), dtype=bool)})
+ 
+     @pytest.mark.parametrize(
+         "names, err",
+diff --git a/tools/Polygraphy/tests/comparator/test_compare.py b/tools/Polygraphy/tests/comparator/test_compare.py
+index 3555e3aa..8ebe7632 100644
+--- a/tools/Polygraphy/tests/comparator/test_compare.py
++++ b/tools/Polygraphy/tests/comparator/test_compare.py
+@@ -23,8 +23,8 @@ from polygraphy.logger import G_LOGGER
+ 
+ class TestBasicCompareFunc(object):
+     def test_can_compare_bool(self):
+-        iter_result0 = IterationResult(outputs={"output": np.zeros((4, 4), dtype=np.bool)})
+-        iter_result1 = IterationResult(outputs={"output": np.ones((4, 4), dtype=np.bool)})
++        iter_result0 = IterationResult(outputs={"output": np.zeros((4, 4), dtype=bool)})
++        iter_result1 = IterationResult(outputs={"output": np.ones((4, 4), dtype=bool)})
+ 
+         compare_func = CompareFunc.simple()
+         acc = compare_func(iter_result0, iter_result1)
+diff --git a/tools/Polygraphy/tests/comparator/test_data_loader.py b/tools/Polygraphy/tests/comparator/test_data_loader.py
+index 3c756d19..7870132a 100644
+--- a/tools/Polygraphy/tests/comparator/test_data_loader.py
++++ b/tools/Polygraphy/tests/comparator/test_data_loader.py
+@@ -28,7 +28,7 @@ def meta(dtype):
+ 
+ 
+ class TestDataLoader(object):
+-    @pytest.mark.parametrize("dtype", [np.int32, np.bool, np.float32, np.int64])
++    @pytest.mark.parametrize("dtype", [np.int32, bool, np.float32, np.int64])
+     def test_default_ranges(self, dtype):
+         data_loader = DataLoader(input_metadata=meta(dtype))
+         x, y = data_loader[0].values()
+@@ -47,7 +47,7 @@ class TestDataLoader(object):
+         feed_dict = data_loader[0]
+         assert tuple(feed_dict["X"].shape) == shape
+ 
+-    @pytest.mark.parametrize("dtype", [np.int32, np.bool, np.float32, np.int64])
++    @pytest.mark.parametrize("dtype", [np.int32, bool, np.float32, np.int64])
+     @pytest.mark.parametrize("range_val", [0, 1])
+     def test_range_min_max_equal(self, dtype, range_val):
+         data_loader = DataLoader(input_metadata=meta(dtype), val_range=(range_val, range_val))
+@@ -60,7 +60,7 @@ class TestDataLoader(object):
+         [
+             (0, 1, np.int32),
+             (5.0, 5.5, np.float32),
+-            (0, 1, np.bool),
++            (0, 1, bool),
+         ],
+     )
+     def test_val_ranges(self, range):
+diff --git a/tools/onnx-graphsurgeon/tests/ir/test_graph.py b/tools/onnx-graphsurgeon/tests/ir/test_graph.py
+index 12631a52..24223ce8 100644
+--- a/tools/onnx-graphsurgeon/tests/ir/test_graph.py
++++ b/tools/onnx-graphsurgeon/tests/ir/test_graph.py
+@@ -1018,7 +1018,7 @@ class TestFoldConstants(object):
+         assert np.all(graph.outputs[0].values == inp.shape[1:3:2])
+ 
+     def test_with_nested_graph(self):
+-        cond = gs.Variable("cond", dtype=np.bool, shape=(1,))
++        cond = gs.Variable("cond", dtype=bool, shape=(1,))
+ 
+         X = gs.Variable("X", dtype=np.float32, shape=(1,))
+         Y = gs.Constant("Y", values=np.ones((1,), dtype=np.float32))
+-- 
+2.34.1
+
+
