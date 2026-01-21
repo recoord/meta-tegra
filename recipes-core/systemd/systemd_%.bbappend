@@ -6,3 +6,5 @@ do_install:append:tegra() {
         ${D}${systemd_system_unitdir}/*.service
 }
 
+PACKAGECONFIG:remove:tegra = "cgroupv2"
+
