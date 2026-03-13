@@ -14,6 +14,19 @@ DEPENDS:remove = "kern-tools-native"
 DEPENDS:append = " kern-tools-tegra-native"
 DEPENDS:append = "${@' wireless-regdb-native' if bb.utils.to_boolean(d.getVar('KERNEL_INTERNAL_WIRELESS_REGDB')) else ''}"
 
+# kernel-yocto.bbclass hardcodes task-level [depends] on kern-tools-native.
+# Since we swap kern-tools-native for kern-tools-tegra-native via DEPENDS above,
+# we must also fix the task [depends] flags — DEPENDS only feeds
+# do_prepare_recipe_sysroot, which has no ordering guarantee relative to these tasks.
+# BitBake varflags don't support :remove/:append, so use python to patch them.
+python () {
+    for task in ['do_kernel_metadata', 'do_validate_branches', 'do_kernel_configme', 'do_config_analysis']:
+        deps = (d.getVarFlag(task, 'depends', False) or '').split()
+        deps = [dep for dep in deps if not dep.startswith('kern-tools-native:')]
+        deps.append('kern-tools-tegra-native:do_populate_sysroot')
+        d.setVarFlag(task, 'depends', ' '.join(deps))
+}
+
 LINUX_VERSION ?= "4.9.337"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}-${@bb.parse.vars_from_file(d.getVar('FILE', False),d)[1]}:"
