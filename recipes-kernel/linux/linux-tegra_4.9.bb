@@ -14,6 +14,15 @@ DEPENDS:remove = "kern-tools-native"
 DEPENDS:append = " kern-tools-tegra-native"
 DEPENDS:append = "${@' wireless-regdb-native' if bb.utils.to_boolean(d.getVar('KERNEL_INTERNAL_WIRELESS_REGDB')) else ''}"
 
+# kernel-yocto.bbclass hardcodes task-level [depends] on kern-tools-native.
+# Since we swap kern-tools-native for kern-tools-tegra-native via DEPENDS above,
+# we must also update the task [depends] flags — DEPENDS only feeds
+# do_prepare_recipe_sysroot, which has no ordering guarantee relative to these tasks.
+do_kernel_metadata[depends] = "kern-tools-tegra-native:do_populate_sysroot"
+do_validate_branches[depends] = "kern-tools-tegra-native:do_populate_sysroot"
+do_kernel_configme[depends] = "kern-tools-tegra-native:do_populate_sysroot"
+do_config_analysis[depends] = "kern-tools-tegra-native:do_populate_sysroot"
+
 LINUX_VERSION ?= "4.9.337"
 PV = "${LINUX_VERSION}+git${SRCPV}"
 FILESEXTRAPATHS:prepend := "${THISDIR}/${BPN}-${@bb.parse.vars_from_file(d.getVar('FILE', False),d)[1]}:"
